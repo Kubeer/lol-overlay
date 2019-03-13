@@ -2,7 +2,7 @@
   "name": "loloverlay",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "app/scripts/main.js",
   "scripts": {
     "start": "electron ."
   },
