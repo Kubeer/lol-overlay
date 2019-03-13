@@ -15,3 +15,7 @@ ipcRenderer.on('addFriend', function(e, friend){
     li.innerHTML = friendTemplate
     ul.appendChild(li)
 })
+
+ipcRenderer.on('onData', function(e) {
+    document.getElementById('status').innerHTML = ''
+})

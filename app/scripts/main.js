@@ -85,6 +85,7 @@ connector.on('connect', (data) => {
 			}
 		}).then(res => res.json())
 		.then(function(iconResponse) {
+			friendsWindow.webContents.send('onData')
 			for (var icon in iconResponse) {
 				friends[iconResponse[icon].summonerId.toString()].icon = iconResponse[icon].profileIconId
 				friendsWindow.webContents.send('addFriend', friends[iconResponse[icon].summonerId.toString()])

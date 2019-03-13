@@ -67,7 +67,7 @@ ul li:hover {
     display: grid;
 }
 
-#reminder {
+#status {
     width: 100%;
     height: 20px;
     top: 50px;
