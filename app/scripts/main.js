@@ -1,3 +1,5 @@
+'use strict';
+
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
@@ -23,12 +25,14 @@ app.on('ready', function(){
 	mainWindow = new BrowserWindow({
 		transparent: true,
 		frame: false,
-		resizable: false,
-		alwaysOnTop: true
+		skipTaskbar: true,
+		resizable: false
 	});
+	mainWindow.setAlwaysOnTop(true, 'screen-saver', 1)
+	mainWindow.setVisibleOnAllWorkspaces(true);
 
 	mainWindow.loadURL(url.format({
-		pathname: path.join(__dirname, 'main.html'),
+		pathname: path.join(__dirname, '../html/main.html'),
 		protocol: 'file:',
 		slashes: true
 	}));
@@ -39,11 +43,11 @@ app.on('ready', function(){
 	friendsWindow = new BrowserWindow({
 		width: 330,
 		height: 700,
-		alwaysOnTop: true,
-		frame: false
+		frame: false,
+		parent: mainWindow
 	});
 	friendsWindow.loadURL(url.format({
-		pathname: path.join(__dirname, 'friends.html'),
+		pathname: path.join(__dirname, '../html/friends.html'),
 		protocol: 'file:',
 		slashes: true
 	}));
@@ -71,7 +75,7 @@ connector.on('connect', (data) => {
 		}
 	}).then(res => res.json())
 	.then(function(response) {
-		ids = '%5B'
+		var ids = '%5B'
 		for (var friend in response) {
 			friends[response[friend].id] = response[friend]
 			ids += response[friend].id + '%2C'
