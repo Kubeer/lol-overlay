@@ -13,8 +13,15 @@ ipcRenderer.on('addFriend', function(e, friend){
         <span class="state">${friend.availability}</span>
     </div>`
     li.innerHTML = friendTemplate
+    li.addEventListener('click', function() {
+        openChat(friend)
+    })
     ul.appendChild(li)
 })
+
+function openChat(friend) {
+    ipcRenderer.send('openChat', friend)
+}
 
 ipcRenderer.on('onData', function(e) {
     document.getElementById('status').innerHTML = ''
