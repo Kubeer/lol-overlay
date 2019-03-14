@@ -6,18 +6,21 @@ const path = require('path');
 const LCUConnector = require('lcu-connector');
 const fetch = require('node-fetch');
 const Base64 = require('js-base64').Base64;
+const {RiotWSProtocol} = require('./RiotWS');
 
 const {app, BrowserWindow, globalShortcut, ipcMain} = electron;
 const LCU = {
 	url: '',
+	wsURL: '',
 	auth: ''
 }
 
 let mainWindow;
 let friendsWindow;
 let connector;
-var friends = {};
-var chats = {};
+let riotWS;
+let friends = {};
+let chats = {};
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -78,13 +81,24 @@ app.on('ready', function(){
 	})
 })
 
+function friendUpdate(data) {
+	console.log(data)
+}
+
 //Getting friends data
 function onFriendsLoad() {
 	connector = new LCUConnector();
 	connector.on('connect', (data) => {
 		LCU.url = data.protocol+'://'+data.address+':'+data.port
+		LCU.wsURL = 'wss://'+data.username+':'+data.password+'@'+data.address+':'+data.port
 		LCU.auth = Base64.encode(data.username+':'+data.password)
 		console.log('Connected. URL: '+LCU.url+' Auth Key: '+LCU.auth)
+
+		riotWS = new RiotWSProtocol(LCU.wsURL)
+		riotWS.on('open', () => {
+			console.log('Connected to Riot WS.')
+			riotWS.subscribe('OnJsonApiEvent_lol-chat_v1_friends', friendUpdate);
+		})
 
 		fetch(LCU.url+'/lol-chat/v1/friends', {
 			method: 'GET',

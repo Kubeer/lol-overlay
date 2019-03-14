@@ -13,6 +13,7 @@
     "js-base64": "^2.5.1",
     "lcu-connector": "^2.1.1",
     "node-fetch": "^2.3.0",
+    "ws": "^6.2.0",
     "xmlhttprequest": "^1.8.0"
   }
 }
