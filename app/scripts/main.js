@@ -1,5 +1,4 @@
 'use strict';
-
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
@@ -18,7 +17,6 @@ const LCU = {
 let mainWindow;
 let friendsWindow;
 let connector;
-let riotWS;
 let friends = {};
 let chats = {};
 
@@ -28,12 +26,12 @@ app.on('ready', function(){
 	//Main window init
 	mainWindow = new BrowserWindow({
 		transparent: true,
-		frame: false,
+		//frame: false,
 		skipTaskbar: true,
 		resizable: false
 	});
-	mainWindow.setAlwaysOnTop(true, 'screen-saver', 1)
-	mainWindow.setVisibleOnAllWorkspaces(true);
+	//mainWindow.setAlwaysOnTop(true, 'screen-saver', 1)
+	//mainWindow.setVisibleOnAllWorkspaces(true);
 
 	mainWindow.loadURL(url.format({
 		pathname: path.join(__dirname, '../html/main.html'),
@@ -82,7 +80,21 @@ app.on('ready', function(){
 })
 
 function friendUpdate(data) {
-	console.log(data)
+	var friend = data[Object.keys(data)[0]];
+	if (friend.availability == 'offline') {
+		friend.lol.profileIcon = friends[friend.id].icon;
+	}
+	friends[friend.id] = friend;
+	friendsWindow.webContents.send('updateFriend', friends[friend.id]);
+}
+
+function newMessage(data) {
+	if (data.eventType === 'Update') {
+		if (data.data.id in chats) {
+			chats[data.data.id].webContents.send('addMessage', data.data.lastMessage)
+		}
+		//Notyfikacja?
+	}
 }
 
 //Getting friends data
@@ -94,10 +106,11 @@ function onFriendsLoad() {
 		LCU.auth = Base64.encode(data.username+':'+data.password)
 		console.log('Connected. URL: '+LCU.url+' Auth Key: '+LCU.auth)
 
-		riotWS = new RiotWSProtocol(LCU.wsURL)
+		const riotWS = new RiotWSProtocol(LCU.wsURL)
 		riotWS.on('open', () => {
 			console.log('Connected to Riot WS.')
 			riotWS.subscribe('OnJsonApiEvent_lol-chat_v1_friends', friendUpdate);
+			riotWS.subscribe('OnJsonApiEvent_lol-chat_v1_conversations', newMessage);
 		})
 
 		fetch(LCU.url+'/lol-chat/v1/friends', {
@@ -128,28 +141,53 @@ function onFriendsLoad() {
 					friendsWindow.webContents.send('addFriend', friends[iconResponse[icon].summonerId.toString()])
 				}
 			})
-			.catch(error => console.error('Error:', error));
+			.catch(error => console.error('An error occured during getting friends icons ID:', error));
 		})
-		.catch(error => console.error('Error:', error));
+		.catch(error => console.error('An error occured during getting friends list:', error));
 	});
 	connector.start();
 }
 
 //Opening chat window
 ipcMain.on('openChat', (e, friend) => {
-	console.log(friend)
 	chats[friend.id] = new BrowserWindow({
 		width: 500,
 		height: 300,
 		frame: false,
 		parent: mainWindow
-	})
+	});
 	chats[friend.id].loadURL(url.format({
 		pathname: path.join(__dirname, '../html/chat.html'),
 		protocol: 'file:',
 		slashes: true
 	}));
 	chats[friend.id].webContents.on('did-finish-load', () => {
-		chats[friend.id].webContents.send('init', friend)
-	})
+		fetch(LCU.url+`/lol-chat/v1/conversations/${friend.id}/messages`, {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/json',
+				'Authorization': 'Basic '+LCU.auth
+			}
+		}).then(res => res.json())
+		.then(function(resp) {
+			var messages = [];
+			if (resp.errorCode === 'RPC_ERROR' && resp.httpStatus === 404 && resp.message === 'Conversation not found') {
+				fetch(LCU.url+'/lol-chat/v1/conversations', {
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json',
+						'Authorization': 'Basic '+LCU.auth
+					},
+					body: JSON.stringify({
+						"id": friend.id.toString(),
+						"type": "chat"
+					})
+				});
+			} else {
+				messages = resp;
+			}
+			chats[friend.id].webContents.send('init', friend, messages);
+		})
+		.catch(error => console.error('An error occured during getting messages: ', error));
+	});
 })

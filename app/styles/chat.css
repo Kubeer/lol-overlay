@@ -38,12 +38,14 @@ body {
 
 .messages {
     background: #00070E;
-    width: 90%;
-    margin-left: 5%;
-    height: calc(100% - 150px);
-    top: 70px;
+    width: 95%;
+    margin-left: 2%;
+    height: calc(100% - 130px);
+    top: 50px;
     position: relative;
     list-style: none;
+    overflow: scroll;
+    padding: 0;
 }
 
 .message {
@@ -51,15 +53,18 @@ body {
     border-radius: 8px;
     padding: 10px;
     display: table;
+    margin-left: 10px;
+    margin-bottom: 10px;
 }
 
 .me {
     background-color: #785A28;
     margin-left: auto;
+    margin-right: 10px;
 }
 
 #message-in {
-    border: 1px solid #CDBE91;
+    border: 1px solid #785A28;
     background: transparent;
     height: 30px;
     width: 90%;
@@ -74,4 +79,5 @@ body {
 
 input:focus {
     outline: none;
+    box-shadow: 0 -1px 1em #CDBE91 inset;
 }
