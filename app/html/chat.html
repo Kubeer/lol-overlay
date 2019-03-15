@@ -7,10 +7,7 @@
     </head>
     <body>
         <div id="title" class="title-bar">Username</div>
-        <ul class="messages">
-            <li class="message">Friend's message</li>
-            <li class="message me">My message</li>
-        </ul>
-        <input id="message-in" type="text" />
+        <ul id="messages-container" class="messages"></ul>
+        <input id="message-in" type="text" onkeypress="sendMessage(event)" />
     </body>
 </html>
