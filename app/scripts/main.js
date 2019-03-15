@@ -148,6 +148,22 @@ function onFriendsLoad() {
 	connector.start();
 }
 
+ipcMain.on('sendMessage', (e, id, text) => {
+	console.log(id)
+	console.log(text)
+	fetch(LCU.url+`/lol-chat/v1/conversations/${id}/messages`, {
+		method: 'POST',
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json',
+			'Authorization': 'Basic '+LCU.auth
+		},
+		body: JSON.stringify({
+			'body': text
+		})
+	}).catch(error => console.error('An error occured during sending a message:', error))
+})
+
 //Opening chat window
 ipcMain.on('openChat', (e, friend) => {
 	chats[friend.id] = new BrowserWindow({

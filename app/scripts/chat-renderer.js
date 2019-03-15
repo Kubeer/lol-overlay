@@ -35,8 +35,7 @@ ipcRenderer.on('addMessage', (e, data) => {
 function sendMessage(e) {
     if (event.which == 13 || event.keyCode == 13) {
         var textInput = document.getElementById('message-in');
-        ipcRenderer.send('sendMessage', friend)
-        alert(textInput.value)
+        ipcRenderer.send('sendMessage', id, textInput.value)
         return false;
     }
     return true;
